@@ -27,6 +27,20 @@
   "manifest": {
     "host_permissions": [
       "https://*/*"
+    ],
+    "permissions": [
+      "scripting",
+      "downloads"
+    ],
+    "web_accessible_resources": [
+      {
+        "matches": [
+          "<all_urls>"
+        ],
+        "resources": [
+          "tabs/delta-flyer.html"
+        ]
+      }
     ]
   }
 }
