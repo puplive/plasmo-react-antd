@@ -7,6 +7,8 @@ import { ThemeProvider } from "~theme"
 // import type { CheckboxProps } from 'antd'
 
 function IndexPopup() {
+  const [filename, setFilename] = useState('');
+  const [attrContent, setAttrContent] = useState('');
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [mainPics, setMainPics] = useState([]);
@@ -60,47 +62,28 @@ function IndexPopup() {
   const attrItems = attrs.map((person, i) =>
     <div key={i}>{person}</div>
   );
-
-  
   const handleDownload = () => {
-    
-    var name = ''
-    var text = '';
-    text += "标题："+title+"\n";
-    text += "价格：¥"+price+"\n";
-    for (var i = 0; i < attrs.length; i++) {
-      text += attrs[i]+"\n";
-      if(attrs[i].indexOf('货号：')>=0){
-        name = `[${attrs[i].trim()}]`
-        //attrs[i].split('货号：')[1].trim();
-      }
-    }
     // 创建一个新的Blob对象，用于保存文本内容
-    var blob = new Blob([text], {type: 'text/plain'});
+    var blob = new Blob([attrContent], {type: 'text/plain'});
     var url = URL.createObjectURL(blob);
     
-    // 创建一个下载链接并点击下载
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = name+'.txt';
-    a.click();
-
+    chrome.downloads.download({ url: url, filename: `${filename}/属性.txt` });
     for (var i = 0; i < mainPics.length; i++) {
       const item = mainPics[i];
       if(item.checked){
-        chrome.downloads.download({ url: item.src, filename: `${name}-主图-${i}.${/[^.]+$/.exec(item.src)}` });
+        chrome.downloads.download({ url: item.src, filename: `${filename}/主图-${i}.${/[^.]+$/.exec(item.src)}` });
       }
     }
     for (var i = 0; i < colorImgs.length; i++) {
       const item = colorImgs[i];
       // if(colorImgs[i].checked){
-        chrome.downloads.download({ url: item.src, filename: `${name}-颜色图-${item.title}.${/[^.]+$/.exec(item.src)}` });
+        chrome.downloads.download({ url: item.src, filename: `${filename}/颜色图-${item.title.replace(/\/|\\|\:|\*|\?|\"|\<|\>|\|/g, '-')}.${/[^.]+$/.exec(item.src)}` });
       // }
     }
     for (var i = 0; i < descImgs.length; i++) {
       const item = descImgs[i];
       if(item.checked){
-        chrome.downloads.download({ url: item.src, filename: `${name}-详情-${i}.${/[^.]+$/.exec(item.src)}` });
+        chrome.downloads.download({ url: item.src, filename: `${filename}/详情图-${i}.${/[^.]+$/.exec(item.src)}` });
       }
     }
   }
@@ -122,43 +105,80 @@ function IndexPopup() {
             price: document.querySelector("[class^=Price--priceText]").textContent.trim(),
             mainPics: [],
             descImgs: [],
-            attr: [],
+            attrs: [],
             colorImgs: []
           }
+          const changeImgUrlWebp = (src)=>{
+            let arr = src.split('_');
+            if(arr.length>1 &&arr[arr.length-1] === '.webp') {
+              return  arr.slice(0, -2).join('_');
+            } else {
+              return src;
+            }
+          }
+          // console.log(images)
           for (var i = 0; i < images.length; i++) {
+            console.log(images[i].src)
             data.mainPics.push( { 
               checked: true,
-              src: images[i].src.split('_110x10000Q75.jpg_.webp')[0]
+              src: changeImgUrlWebp(images[i].src)
             } );
           }
           for (var i = 0; i < images_detail.length; i++) {
             let src = (images_detail[i].dataset.src || images_detail[i].src).split('?')[0];
             data.descImgs.push({ 
               checked: true,
-              src: src.split('//')[0]?src: ('https:'+src)
+              src: changeImgUrlWebp(src.split('//')[0]?src: ('https:'+src))
             });
           }
           for (var i = 0; i < color_images.length; i++) {
             data.colorImgs.push( { 
               checked: true,
               title: color_images[i].parentNode.title,
-              src: color_images[i].src.split('_60x60q50.jpg_.webp')[0]
+              src: changeImgUrlWebp(color_images[i].src)
             } );
           }
           for (var i = 0; i < product_info.length; i++) {
-            data.attr.push(product_info[i].title);
+            data.attrs.push(product_info[i].title);
           }
           return data;
         }
       }).then(function (result) {
         
         let resultData = result[0].result;
+        console.log(resultData)
         setTitle(resultData.title);
         setPrice(resultData.price);
         setMainPics(resultData.mainPics);
         setDescImgs(resultData.descImgs);
-        setAttrs(resultData.attr);
+        setAttrs(resultData.attrs);
         setColorImgs(resultData.colorImgs);
+
+        var brandName = ''; // 品牌名
+        var name = ''; // 货号或品名
+        var text = '';
+        text += "标题："+resultData.title+"\n";
+        text += "价格：¥"+resultData.price+"\n";
+        for (var i = 0; i < resultData.attrs.length; i++) {
+          let attr = resultData.attrs[i].trim();
+          text += attr+"\n";
+          if(attr.indexOf('品牌：')>=0){
+            brandName = attr.split('：')[1].trim();
+          }else if(attr.indexOf('货号：')>=0 || attr.indexOf('款号：')>=0 || attr.indexOf('型号：')>=0 || attr.indexOf('品名：')>=0 || attr.indexOf('系列：')>=0){
+            if(!name) {
+              name = `[${attr.split('：')[1].trim()}]`
+            }
+          }
+        }
+        if(!brandName) {
+          brandName = resultData.attrs[0].trim()? resultData.attrs[0].trim().split('：')[1].trim() : '未知品牌'
+        }
+        if(!name) {
+          name = '未知货号'
+        }
+        setFilename(`${brandName.replace(/\/|\\|\:|\*|\?|\"|\<|\>|\|/g, '-')}-${name.replace(/\/|\\|\:|\*|\?|\"|\<|\>|\|/g, '-')}`);
+        setAttrContent(text);
+
         setShowDetail(true);
       });
     });
@@ -189,9 +209,12 @@ function IndexPopup() {
               </div>
               <h3>主图：</h3>
               <div className="main-pics" style={{display: 'flex', flexWrap: 'wrap'}}>{mainPicItems}</div>
+              {colorImgs.length > 0 && 
+              <>
               <h3>颜色图：</h3>
               <div className="color-imgs">{colorPicItems}</div>
-              
+              </>
+              }
               <h3>详情：</h3>
               <div className="desc-imgs" style={{display: 'flex', flexWrap: 'wrap'}}>
                 {imgItems}
