@@ -6,7 +6,7 @@ import { ThemeProvider } from "~theme"
 
 // import type { CheckboxProps } from 'antd'
 
-function IndexPopup() {
+function IndexSidePanel() {
   const [filename, setFilename] = useState('');
   const [attrContent, setAttrContent] = useState('');
   const [title, setTitle] = useState('');
@@ -92,18 +92,20 @@ function IndexPopup() {
       chrome.scripting.executeScript({
         target: { tabId: tabs[0].id },
         func: async () => {
-          // document.querySelector('.sell-component-image-space-upload-button').click();
+        //   document.querySelector('.sell-component-image-space-upload-button').click();
           window.scrollTo(0, document.body.scrollHeight)
           window.scrollTo(0, 0)
           await new Promise(resolve => setTimeout(resolve, 400));
-          var images = document.querySelectorAll("img[class^=PicGallery--thumbnailPic]");
-          var images_detail = document.querySelectorAll(".desc-root img.lazyload");
-          var product_info = document.querySelectorAll("[class^=Attrs--attr--]");
-          var color_images = document.querySelectorAll("[class^=skuIcon]");
+          var images = document.querySelectorAll("img[class^=PicGallery--thumbnailPic]") || [];
+          var images_detail = document.querySelectorAll(".desc-root img.lazyload") || [];
+          var product_info = document.querySelectorAll("[class^=Attrs--attr--]") || [];
+          var color_images = document.querySelectorAll("[class^=skuIcon]") || [];
+          let title = document.querySelector("[class^=ItemHeader--mainTitle]");
+          let price = document.querySelector("[class^=Price--priceText]");
           
           let data = {
-            title: document.querySelector("[class^=ItemHeader--mainTitle]").textContent.trim(),
-            price: document.querySelector("[class^=Price--priceText]").textContent.trim(),
+            title: title?title.textContent.trim():'',
+            price: price?price.textContent.trim():'',
             mainPics: [],
             descImgs: [],
             attrs: [],
@@ -145,8 +147,9 @@ function IndexPopup() {
           return data;
         }
       }).then(function (result) {
-        console.log(result)
+        
         let resultData = result[0].result;
+        console.log(resultData)
         setTitle(resultData.title);
         setPrice(resultData.price);
         setMainPics(resultData.mainPics);
@@ -231,4 +234,4 @@ function IndexPopup() {
   )
 }
 
-export default IndexPopup
+export default IndexSidePanel

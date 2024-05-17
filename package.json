@@ -30,7 +30,17 @@
     ],
     "permissions": [
       "scripting",
-      "downloads"
+      "downloads",
+      "storage",
+      "tabs",
+      "sidePanel",
+      "webRequest",
+      "webRequestBlocking",
+      "contextMenus",
+      "notifications",
+      "clipboardRead",
+      "clipboardWrite",
+      "activeTab"
     ],
     "web_accessible_resources": [
       {
