@@ -87,12 +87,13 @@ function IndexSidePanel() {
       }
     }
   }
+
   const getImgUrl = () => {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       chrome.scripting.executeScript({
         target: { tabId: tabs[0].id },
         func: async () => {
-        //   document.querySelector('.sell-component-image-space-upload-button').click();
+          
           window.scrollTo(0, document.body.scrollHeight)
           window.scrollTo(0, 0)
           await new Promise(resolve => setTimeout(resolve, 400));
@@ -149,7 +150,7 @@ function IndexSidePanel() {
       }).then(function (result) {
         
         let resultData = result[0].result;
-        console.log(resultData)
+        // console.log(resultData)
         setTitle(resultData.title);
         setPrice(resultData.price);
         setMainPics(resultData.mainPics);
@@ -173,7 +174,7 @@ function IndexSidePanel() {
             }
           }
         }
-        if(!brandName) {
+        if(!brandName && resultData.attrs.length > 0) {
           brandName = resultData.attrs[0].trim()? resultData.attrs[0].trim().split('：')[1].trim() : '未知品牌'
         }
         if(!name) {

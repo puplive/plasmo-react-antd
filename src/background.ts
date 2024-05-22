@@ -1,5 +1,3 @@
-console.log("Hello, world!");
-
 chrome.action.onClicked.addListener(() => {
   console.log(`action clicked: `)
 })
