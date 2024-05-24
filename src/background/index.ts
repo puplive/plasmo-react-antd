@@ -1,5 +1,5 @@
 chrome.action.onClicked.addListener(() => {
-  console.log(`action clicked: `)
+  // console.log(`action clicked: `)
 })
 chrome.sidePanel
   .setPanelBehavior({ openPanelOnActionClick: true })

@@ -189,7 +189,12 @@ function IndexSidePanel() {
   }
 
   const handStart = () => {
-    document.querySelector('button').click();
+    fetch('https://open-data-api.jin10.com/data-api/flash?category=2')
+     .then(response => response.json())
+     .then(data => {
+        console.log(data)
+      })
+     .catch(error => console.error(error))
   }
   
 
@@ -200,7 +205,7 @@ function IndexSidePanel() {
           display: "flex",
           flexDirection: "column",
           padding: 16,
-          width: 400,
+          // width: 400,
         }}>
         <div>
           <Button type="primary" onClick={getImgUrl}>查看详情</Button>
@@ -211,7 +216,7 @@ function IndexSidePanel() {
           (
             <>
               <h3>标题：{title}</h3>
-              <h3>价格：<font color="#FF5722">¥{price}</font></h3>
+              <h3>价格：<span color="#FF5722">¥{price}</span></h3>
               <div className="">
                 {attrItems}
               </div>

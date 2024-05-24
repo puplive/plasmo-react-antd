@@ -33,12 +33,7 @@
       "downloads",
       "storage",
       "tabs",
-      "commands",
       "sidePanel",
-      "contextMenus",
-      "notifications",
-      "clipboardRead",
-      "clipboardWrite",
       "activeTab"
     ],
     "web_accessible_resources": [
