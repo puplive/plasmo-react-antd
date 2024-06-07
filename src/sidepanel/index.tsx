@@ -88,7 +88,7 @@ function IndexSidePanel() {
     }
   }
 
-  const getImgUrl = () => {
+  const getImgUrl = async () => {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       chrome.scripting.executeScript({
         target: { tabId: tabs[0].id },
@@ -186,6 +186,8 @@ function IndexSidePanel() {
         setShowDetail(true);
       });
     });
+    let e = await W()
+    console.log(e)
   }
 
   const handStart = () => {
@@ -195,6 +197,47 @@ function IndexSidePanel() {
         console.log(data)
       })
      .catch(error => console.error(error))
+  }
+  var X = { credentials: "include" },
+  E = {
+    OK: 0,
+    FAILED_TO_FETCH: -1,
+    INVALID_RESPONSE: -2,
+    VIP_ONLY: -10403,
+    UNKNOWN: -99999,
+  };
+  var g = (...e) => {}
+  var W = async (e) => {
+    try {
+      let d = await (await window.fetch(window.location.href, X)).text(),
+        o = d.match(/<script>window.__INITIAL_STATE__=(.+?)<\/script>/);
+      if (o && o[1]) {
+        let N = JSON.parse(
+          o[1].replace(
+            ";(function(){var s;(s=document.currentScript||document.scripts[document.scripts.length-1]).parentNode.removeChild(s);}());",
+            ""
+          )
+        );
+        return g("initial state:", N), { code: E.OK, data: N };
+      }
+      let a = d.match(
+        /<script id="__NEXT_DATA__" type="application\/json">(.+?)<\/script>/
+      );
+      if (a && a[1]) {
+        let t = JSON.parse(a[1]).props.pageProps.dehydratedState.queries[0]
+          .state;
+        return (
+          t.status === "success" && (t.code = E.OK), g("initial state:", t), t
+        );
+      }
+      return {
+        code: E.INVALID_RESPONSE,
+        message: "获取视频信息失败，可以尝试清除浏览器cookies和缓存后重试",
+      };
+    } catch (i) {
+      return g("获取视频信息失败：", i)
+      // , await networkErrorHandler();
+    }
   }
   
 
@@ -212,6 +255,7 @@ function IndexSidePanel() {
 
           {showDetail && <Button type="primary" onClick={handleDownload} style={{marginLeft:10}}>下载</Button>}
         </div>
+        <video controls src="https://upos-sz-estgoss.bilivideo.com/upgcxcode/36/37/191823736/191823736-1-30080.m4s?e=ig8euxZM2rNcNbdlhoNvNC8BqJIzNbfqXBvEqxTEto8BTrNvN0GvT90W5JZMkX_YN0MvXg8gNEV4NC8xNEV4N03eN0B5tZlqNxTEto8BTrNvNeZVuJ10Kj_g2UB02J0mN0B5tZlqNCNEto8BTrNvNC7MTX502C8f2jmMQJ6mqF2fka1mqx6gqj0eN0B599M=&uipk=5&nbs=1&deadline=1716552085&gen=playurlv2&os=upos&oi=2071476386&trid=ed17bfefe2fb44ecb370cba206ba29c0u&mid=19144921&platform=pc&upsig=5b5095c4918a4ac832ead86cecf33a68&uparams=e,uipk,nbs,deadline,gen,os,oi,trid,mid,platform&bvc=vod&nettype=0&orderid=0,3&buvid=E287A8C2-FCF5-E8F7-E3A8-7086E6C1F96F29631infoc&build=0&f=u_0_0&agrr=1&bw=99961&logo=80000000"></video>
         {showDetail && 
           (
             <>
